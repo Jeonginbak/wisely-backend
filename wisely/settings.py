@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'wisely.wsgi.application'
 #    }
 #}
 
-DATABASE = my_settings.DATABASE
+DATABASES = my_settings.DATABASES
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
