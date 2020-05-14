@@ -25,23 +25,26 @@ class RazorSet(models.Model):
 
 class RazorSetImage(models.Model):
     product_image = models.URLField(max_length = 2000)
+    result_image  = models.URLField(max_length = 2000)
     color         = models.ForeignKey('Color', on_delete = models.SET_NULL, null = True)
 
     class Meta:
         db_table = 'razor_set_images'
 
 class Blade(models.Model):
-    name  = models.CharField(max_length = 20)
-    price = models.PositiveIntegerField(default = 0)
-    image = models.URLField(max_length = 2000)
+    name         = models.CharField(max_length = 20)
+    price        = models.PositiveIntegerField(default = 0)
+    image        = models.URLField(max_length = 2000)
+    result_image = models.URLField(max_length = 2000)
 
     class Meta:
         db_table = 'blades'
 
 class ShavingGel(models.Model):
-    name  = models.CharField(max_length = 20)
-    price = models.PositiveIntegerField(default = 0)
-    image = models.URLField(max_length = 2000)
+    name         = models.CharField(max_length = 20)
+    price        = models.PositiveIntegerField(default = 0)
+    image        = models.URLField(max_length = 2000)
+    result_image = models.URLField(max_length = 2000)
 
     class Meta:
         db_table = 'shaving_gels'
@@ -55,9 +58,10 @@ class AfterShave(models.Model):
         db_table = 'after_shaves'
 
 class AfterShaveSkinType(models.Model):
-    after_shave = models.ForeignKey('AfterShave', on_delete = models.SET_NULL, null = True)
-    skin_type   = models.ForeignKey('SkinType', on_delete = models.SET_NULL, null = True)
-    image       = models.URLField(max_length = 2000)
+    after_shave  = models.ForeignKey('AfterShave', on_delete = models.SET_NULL, null = True)
+    skin_type    = models.ForeignKey('SkinType', on_delete = models.SET_NULL, null = True)
+    image        = models.URLField(max_length = 2000)
+    result_image = models.URLField(max_length = 2000)
 
     class Meta:
         db_table = 'after_shaves_skin_types'
