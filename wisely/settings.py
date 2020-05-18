@@ -26,8 +26,8 @@ SECRET_KEY = my_settings.SECRET['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = my_settings.ALLOWED_HOSTS['ALLOWED_HOSTS']
-
+SECRET_KEY = my_settings.SECRET['SECRET_KEY']
+ALGORITHMS = my_settings.ALGORITHMS['ALGORITHMS']
 
 # Application definition
 
