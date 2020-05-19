@@ -9,7 +9,7 @@ def login_required(func):
     def wrapper(self, request, *args, **kwargs):
         try:
             access_token = jwt.decode(request.headers['Authorization'], SECRET_KEY, algorithms = ALGORITHMS)
-            request.user = User.objects.get(id = access_token['user_id'])
+            request.user = User.objects.get(id = access_token['id'])
             return func(self, request, *args, **kwargs)
         except jwt.DecodeError:
             return JsonResponse({'message' : 'INVALID_TOKEN'}, status = 400)

@@ -97,6 +97,29 @@ class Cart(models.Model):
     shaving_gel = models.ForeignKey('ShavingGel', on_delete = models.SET_NULL, null = True)
     after_shave = models.ForeignKey('AfterShaveSkinType', on_delete = models.SET_NULL, null = True)
     color       = models.ForeignKey('Color', on_delete = models.SET_NULL, null = True)
+    order       = models.ForeignKey('Order', on_delete = models.SET_NULL, null = True)
 
     class Meta:
         db_table = 'carts'
+
+class Order(models.Model):
+    order_num      = models.CharField(max_length = 50)
+    name           = models.CharField(max_length = 50)
+    phone_number   = models.CharField(max_length = 20)
+    address        = models.CharField(max_length = 1000)
+    detail_address = models.CharField(max_length = 500)
+    memo           = models.CharField(max_length = 500)
+    order_status   = models.ForeignKey('OrderStatus', on_delete = models.SET_NULL, null = True)
+    user           = models.ForeignKey('user.User', on_delete = models.SET_NULL, null = True)
+    created_at     = models.DateTimeField(auto_now_add = True)
+    updated_at     = models.DateTimeField(auto_now = True)
+
+    class Meta:
+        db_table = 'orders'
+
+class OrderStatus(models.Model):
+    status = models.CharField(max_length = 30)
+
+    class Meta:
+        db_table = 'order_status'
+
