@@ -10,7 +10,7 @@ class Answer(models.Model):
     answer      = models.CharField(max_length = 50)
     description = models.CharField(max_length = 500, null = True)
     question    = models.ForeignKey('Question', on_delete = models.SET_NULL, null = True)
-    color       = models.ForeignKey('product.color', on_delete = models.SET_NULL, null = True)
+    color       = models.ForeignKey('stores.color', on_delete = models.SET_NULL, null = True)
 
     class Meta:
         db_table = 'answers'

@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import RazorCartView
+from .views import CartAddView
 
 urlpatterns = [
-    path('razor-set/cart', RazorCartView.as_view()),
+    path('cart', CartAddView.as_view()),
 ]
