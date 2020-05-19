@@ -1,34 +1,61 @@
 import json
 
-from django.http         import JsonResponse,HttpResponse
-from django.views        import View
+from django.http    import JsonResponse, HttpResponse
+from django.views   import View
+from django.db      import IntegrityError
 
-from .models             import Cart
-from product.models      import RazorSet, Color
+from user.models    import User
+from .models        import (
+GiftSet,
+GiftSetImage,
+RazorSet,
+RazorSetImage,
+Blade,
+ShavingGel,
+AfterShave,
+AfterShaveSkinType,
+SkinType,
+Color,
+Cart
+)
 
-class RazorCartView(View):
+class CartAddView(View):
     def post(self, request):
         data = json.loads(request.body)
-        try :
-            razor = RazorSet.objects.select_related('image', 'image__color').get(image__color = data['color_id'])
+        try:
+            if sum(value == None for value in data.values()) < 4:
+                return JsonResponse({'message' : 'BAD_REQUEST'}, status = 400)
 
-            if Cart.objects.filter(color_id = data['color_id']).exists():
-                cart = Cart.objects.get(color_id = data['color_id'])
+            if Cart.objects.filter(
+                gift_set_id    = data['gift_set_id'], 
+                razor_set_id   = data['razor_set_id'], 
+                blade_id       = data['blade_id'], 
+                shaving_gel_id = data['shaving_gel_id'], 
+                after_shave_id = data['after_shave_id']).exists():
+
+                cart = Cart.objects.filter(
+                    gift_set_id    = data['gift_set_id'], 
+                    razor_set_id   = data['razor_set_id'], 
+                    blade_id       = data['blade_id'], 
+                    shaving_gel_id = data['shaving_get_id'], 
+                    after_shave_id = data['after_shave_id'])
+
                 cart.quantity += 1
                 cart.save()
-
                 return HttpResponse(status = 200)
 
             Cart.objects.create(
-                razor_set = razor,
-                quantity = 1,
-                color = Color.objects.get(id = data['color_id'])
-            )
-
+                gift_set_id    = data['gift_set_id'],
+                razor_set_id   = data['razor_set_id'],
+                blade_id       = data['blade_id'],
+                shaving_gel_id = data['shaving_gel_id'],
+                after_shave_id = data['after_shave_id'],
+                quantity       = 1
+                )
             return HttpResponse(status = 200)
 
-        except RazorSet.DoesNotExist:
-            return JsonResponse({'message' : 'PRODUCT_DOES_NOT_EXIST'}, status = 400)
-
+        except IntegrityError:
+            return JsonResponse({'message' : 'PRODUCT_DOES_NOT_EXISTS'}, status = 400)
+            
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
