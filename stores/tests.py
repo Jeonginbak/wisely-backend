@@ -1,7 +1,11 @@
 import json
+import bcrypt
+import jwt
+import uuid
 
 from django.test       import Client, TransactionTestCase
 
+from wisely.settings   import SECRET_KEY, ALGORITHMS
 from user.models       import User
 from stores.models     import (
 GiftSet,
@@ -14,11 +18,35 @@ AfterShave,
 AfterShaveSkinType,
 SkinType,
 Color,
-Cart
+Cart,
+Order,
+OrderStatus
 )
 
 class CartAddViewTest(TransactionTestCase):
     def setUp(self):
+        user = User.objects.create(
+            id = 1,
+            password      = bcrypt.hashpw('12345678'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+            phone         = '01012345678',
+            birth         = '1994-05-11',
+            name          = 'unittest',
+            gender        = '남성',
+            alarm_confirm = '1'
+        )
+
+        order_status = OrderStatus.objects.create(
+            id = 1,
+            status = '결제 대기 중'
+        )
+
+        Order.objects.create(
+            id = 1,
+            order_num       = str(uuid.uuid4()),
+            user            = user,
+            order_status    = order_status
+        )
+
         navy_color = Color.objects.create(
             id   = 1,
             name = '미드나이트 네이비',
@@ -30,7 +58,7 @@ class CartAddViewTest(TransactionTestCase):
             color = navy_color
         )
         gift_set_navy = GiftSet.objects.create(
-            id = 1, 
+            id = 1,
             name  = '선물세트(면도용품+기프트 카드)',
             price = 29800,
             image = gift_image
@@ -43,6 +71,7 @@ class CartAddViewTest(TransactionTestCase):
         )
         RazorSet.objects.create(
             id    = 1,
+            name = '면도기세트(면도기+날2입)',
             price = 8900,
             image = razor_image
         )
@@ -93,6 +122,8 @@ class CartAddViewTest(TransactionTestCase):
         )
 
     def tearDown(self):
+        User.objects.all().delete()
+        Order.objects.all().delete()
         Color.objects.all().delete()
         GiftSetImage.objects.all().delete()
         GiftSet.objects.all().delete()
@@ -101,10 +132,11 @@ class CartAddViewTest(TransactionTestCase):
         Blade.objects.all().delete()
         ShavingGel.objects.all().delete()
         AfterShave.objects.all().delete()
-        SkinType.objects.all().delete()  
+        SkinType.objects.all().delete()
         AfterShaveSkinType.objects.all().delete()
 
     def test_cart_add_bad_request(self):
+        user = User.objects.get(id = 1)
         client = Client()
         cart = {'gift_set_id'    : '1',
                 'razor_set_id'   : '1',
@@ -112,22 +144,24 @@ class CartAddViewTest(TransactionTestCase):
                 'shaving_gel_id' : None,
                 'after_shave_id' : None
                 }
-        response = client.post('/cart', json.dumps(cart), content_type = 'application/json')
+        response = client.post('/cart', json.dumps(cart), content_type = 'application/json', **{'HTTP_AUTHORIZATION' : jwt.encode({'id': user.id}, SECRET_KEY, algorithm = ALGORITHMS).decode()})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(),{'message' : 'BAD_REQUEST'})
 
     def test_cart_add_create(self):
         client = Client()
+        user = User.objects.get(id = 1)
         cart = {'gift_set_id'    : '1',
                 'razor_set_id'   : None,
                 'blade_id'       : None,
                 'shaving_gel_id' : None,
-                'after_shave_id' : None
+                'after_shave_id' : None,
                 }
-        response = client.post('/cart', json.dumps(cart), content_type = 'application/json')
+        response = client.post('/cart', json.dumps(cart), content_type = 'application/json', **{'HTTP_AUTHORIZATION' : jwt.encode({'id': user.id}, SECRET_KEY, algorithm = ALGORITHMS).decode()})
         self.assertEqual(response.status_code, 200)
 
     def test_cart_add_quantity(self):
+        user = User.objects.get(id = 1)
         client = Client()
         cart = {'gift_set_id'    : '1',
                 'razor_set_id'   : None,
@@ -135,10 +169,11 @@ class CartAddViewTest(TransactionTestCase):
                 'shaving_gel_id' : None,
                 'after_shave_id' : None
                 }
-        response = client.post('/cart', json.dumps(cart), content_type = 'application/json')
+        response = client.post('/cart', json.dumps(cart), content_type = 'application/json', **{'HTTP_AUTHORIZATION' : jwt.encode({'id': user.id}, SECRET_KEY, algorithm = ALGORITHMS).decode()})
         self.assertEqual(response.status_code, 200)
 
     def test_cart_add_intergrityerror(self):
+        user = User.objects.get(id = 1)
         client = Client()
         cart = {'gift_set_id'    : '4',
                 'razor_set_id'   : None,
@@ -146,11 +181,12 @@ class CartAddViewTest(TransactionTestCase):
                 'shaving_gel_id' : None,
                 'after_shave_id' : None
                 }
-        response = client.post('/cart', json.dumps(cart), content_type = 'application/json')
+        response = client.post('/cart', json.dumps(cart), content_type = 'application/json', **{'HTTP_AUTHORIZATION' : jwt.encode({'id': user.id}, SECRET_KEY, algorithm = ALGORITHMS).decode()})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(),{'message' : 'PRODUCT_DOES_NOT_EXISTS'})
 
     def test_cart_add_keyerror(self):
+        user = User.objects.get(id = 1)
         client = Client()
         cart = {'gift_set'    : '1',
                 'razor_set'   : None,
@@ -158,8 +194,6 @@ class CartAddViewTest(TransactionTestCase):
                 'shaving_gel' : None,
                 'after_shave' : None
                 }
-        response = client.post('/cart', json.dumps(cart), content_type = 'application/json')
+        response = client.post('/cart', json.dumps(cart), content_type = 'application/json', **{'HTTP_AUTHORIZATION' : jwt.encode({'id': user.id}, SECRET_KEY, algorithm = ALGORITHMS).decode()})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(),{'message' : 'KEY_ERROR'})
-
-
