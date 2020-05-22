@@ -96,7 +96,6 @@ class Cart(models.Model):
     blade       = models.ForeignKey('Blade', on_delete = models.SET_NULL, null = True)
     shaving_gel = models.ForeignKey('ShavingGel', on_delete = models.SET_NULL, null = True)
     after_shave = models.ForeignKey('AfterShaveSkinType', on_delete = models.SET_NULL, null = True)
-    color       = models.ForeignKey('Color', on_delete = models.SET_NULL, null = True)
     order       = models.ForeignKey('Order', on_delete = models.SET_NULL, null = True)
 
     class Meta:
