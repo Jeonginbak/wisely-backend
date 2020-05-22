@@ -29,6 +29,7 @@ DEBUG = True
 SECRET_KEY = my_settings.SECRET['SECRET_KEY']
 ALGORITHMS = my_settings.ALGORITHMS['ALGORITHMS']
 
+ALLOWED_HOSTS = my_settings.ALLOWED_HOSTS['ALLOWED_HOSTS']
 # Application definition
 
 INSTALLED_APPS = [

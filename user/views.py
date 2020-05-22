@@ -36,7 +36,7 @@ class SignUpView(View):
                 gender        = data['gender'],
                 alarm_confirm = data['alarm_confirm']
             )
-            return HttpResponse(status = 200)
+            return JsonResponse({'message' : 'SUCCESS'},status = 200)
         except KeyError:
            return JsonResponse({'message':'KEY_ERROR'}, status = 400)
 

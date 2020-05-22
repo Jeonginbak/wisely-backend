@@ -55,7 +55,6 @@ class CartView(View):
                 quantity       = 1,
                 order          = user_order
                 )
-
             return HttpResponse(status = 200)
 
         except IntegrityError:
@@ -128,4 +127,3 @@ class CartView(View):
             'shaving_gel' : shaving_gel,
             'after_shave' : after_shave
             }, status = 200)
-
