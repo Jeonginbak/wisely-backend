@@ -4,6 +4,7 @@ import jwt
 import uuid
 
 from django.test       import Client, TransactionTestCase
+from unittest.mock     import MagicMock, Mock, patch
 
 from wisely.settings   import SECRET_KEY, ALGORITHMS
 from user.models       import User
@@ -23,7 +24,7 @@ Order,
 OrderStatus
 )
 
-class CartAddViewTest(TransactionTestCase):
+class CartViewTest(TransactionTestCase):
     def setUp(self):
         user = User.objects.create(
             id = 1,
@@ -34,19 +35,16 @@ class CartAddViewTest(TransactionTestCase):
             gender        = '남성',
             alarm_confirm = '1'
         )
-
         order_status = OrderStatus.objects.create(
             id = 1,
-            status = '결제 대기 중'
+            status = '결제 대기'
         )
-
-        Order.objects.create(
+        order = Order.objects.create(
             id = 1,
-            order_num       = str(uuid.uuid4()),
+            order_num       = 'wisely_9c5643d74e7c44b1a12bdcb8da72659f',
             user            = user,
-            order_status    = order_status
+            order_status    = order_status,
         )
-
         navy_color = Color.objects.create(
             id   = 1,
             name = '미드나이트 네이비',
@@ -120,6 +118,18 @@ class CartAddViewTest(TransactionTestCase):
             skin_type   = skin_type_oily,
             image       = 'https://wiselyshave-cdn.s3.amazonaws.com/assets/images/items/starter_aftershaveing/after_shaving_gel_oily_30.png'
         )
+        Cart.objects.create(
+            id        = 1,
+            quantity  = 1,
+            user      = user,
+            gift_set  = gift_set_navy,
+            razor_set = None,
+            blade     = None,
+            shaving_gel = None,
+            after_shave = None,
+            color = None,
+            order = order
+        )
 
     def tearDown(self):
         User.objects.all().delete()
@@ -134,6 +144,7 @@ class CartAddViewTest(TransactionTestCase):
         AfterShave.objects.all().delete()
         SkinType.objects.all().delete()
         AfterShaveSkinType.objects.all().delete()
+        Cart.objects.all().delete()
 
     def test_cart_add_bad_request(self):
         user = User.objects.get(id = 1)
@@ -156,18 +167,6 @@ class CartAddViewTest(TransactionTestCase):
                 'blade_id'       : None,
                 'shaving_gel_id' : None,
                 'after_shave_id' : None,
-                }
-        response = client.post('/cart', json.dumps(cart), content_type = 'application/json', **{'HTTP_AUTHORIZATION' : jwt.encode({'id': user.id}, SECRET_KEY, algorithm = ALGORITHMS).decode()})
-        self.assertEqual(response.status_code, 200)
-
-    def test_cart_add_quantity(self):
-        user = User.objects.get(id = 1)
-        client = Client()
-        cart = {'gift_set_id'    : '1',
-                'razor_set_id'   : None,
-                'blade_id'       : None,
-                'shaving_gel_id' : None,
-                'after_shave_id' : None
                 }
         response = client.post('/cart', json.dumps(cart), content_type = 'application/json', **{'HTTP_AUTHORIZATION' : jwt.encode({'id': user.id}, SECRET_KEY, algorithm = ALGORITHMS).decode()})
         self.assertEqual(response.status_code, 200)
@@ -197,3 +196,96 @@ class CartAddViewTest(TransactionTestCase):
         response = client.post('/cart', json.dumps(cart), content_type = 'application/json', **{'HTTP_AUTHORIZATION' : jwt.encode({'id': user.id}, SECRET_KEY, algorithm = ALGORITHMS).decode()})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(),{'message' : 'KEY_ERROR'})
+
+    def test_cart_list(self):
+        self.maxDiff = None 
+        user = User.objects.get(id =1)
+        client = Client()
+        cart = {'gift_set'    : '1',
+                'razor_set'   : None,
+                'blade'       : None,
+                'shaving_gel' : None,
+                'after_shave' : None
+                }
+        response = client.post('/cart', json.dumps(cart), content_type = 'application/json', **{'HTTP_AUTHORIZATION' : jwt.encode({'id': user.id}, SECRET_KEY, algorithm = ALGORITHMS).decode()})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), 
+        {'carts' : 
+          [
+           {'id'            : 1,
+            'order_number'  : 'wisely_9c5643d74e7c44b1a12bdcb8da72659f',
+            'name'          : 'unittest',
+            'address'       : '',
+            'phone_number'  : '',
+            'memo'          : '',
+            'order_status'  : '결제 대기',
+            'cart': [
+                   {'gift_id'          : 1,
+                    'gift_set'         : '선물세트(면도용품+기프트 카드)',
+                    'gift_color'       : '미드나이트 네이비',
+                    'gift_price'       : 29800,
+                    'gift_image'       : 'https://wiselyshave-cdn.s3.amazonaws.com/assets/images/items/gift_set/gift_set_navy.png',
+                    'razor_id'         : None,
+                    'razor_set'        : None,
+                    'razor_color'      : None,
+                    'razor_price'      : None,
+                    'razor_image'      : None,
+                    'blade_id'         : None,
+                    'blade'            : None,
+                    'blade_price'      : None,
+                    'blade_image'      : None,
+                    'shaving_gel_id'   : None,
+                    'shaving_gel'      : None,
+                    'shaving_gel_price': None,
+                    'shaving_gel_image': None,
+                    'after_shave_id'   : None,
+                    'after_shave'      : None,
+                    'skin_type'        : None,
+                    'after_shave_price': None,
+                    'after_shave_image': None
+                    }
+                ]
+            }
+          ],
+            'quantities': {
+                    'gift_set_navy': {
+                        'quantity': 1
+                    },
+                    'gift_set_blue': {
+                        'quantity': 0
+                    },
+                    'gift_set_gray': {
+                        'quantity': 0
+                    },
+                    'razor_set_navy': {
+                        'quantity': 0
+                    },
+                    'razor_set_blue': {
+                        'quantity': 0
+                    },
+                    'razor_set_gray': {
+                        'quantity': 0
+                    },
+                    'blade': {
+                        'quantity': 0
+                    },
+                    'shaving_gel_150': {
+                        'quantity': 0
+                    },
+                    'shaving_gel_75': {
+                        'quantity': 0
+                    },
+                    'after_shave_60_oily': {
+                        'quantity': 0
+                    },
+                    'after_shave_60_dry': {
+                        'quantity': 0
+                    },
+                    'after_shave_30_oily': {
+                        'quantity': 0
+                    },
+                    'after_shave_30_dry': {
+                        'quantity': 0
+                    }
+                }
+        })
