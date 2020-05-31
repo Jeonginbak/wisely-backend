@@ -11,6 +11,7 @@
 - [프론트엔드 GitHub](https://github.com/wecode-bootcamp-korea/wisely-frontend)
 
 <br>
+
 ## 데모 영상
 
 ![Wisely Demo](https://images.velog.io/images/sungjun-jin/post/33991f20-83ea-47b4-82fa-34c066ba8318/image.png)(https://www.youtube.com/watch?v=Lrxk9zgUZl8)
