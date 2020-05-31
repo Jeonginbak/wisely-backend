@@ -135,7 +135,7 @@ class CartView(View):
                 return JsonResponse({'data' : carts}, status = 200)
 
         except IntegrityError:
-            return JsonResponse({'message' : 'PRODUCT_DOES_NOT_EXISTS'}, status = 400)
+            return JsonResponse({'message' : 'PRODUCT_DOES_NOT_EXIST'}, status = 400)
 
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
