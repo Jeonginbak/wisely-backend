@@ -12,7 +12,8 @@
 
 <br>
 ## 데모 영상
-[![Wisely Demo](https://images.velog.io/images/sungjun-jin/post/33991f20-83ea-47b4-82fa-34c066ba8318/image.png)](https://www.youtube.com/watch?v=Lrxk9zgUZl8)
+
+![Wisely Demo](https://images.velog.io/images/sungjun-jin/post/33991f20-83ea-47b4-82fa-34c066ba8318/image.png)(https://www.youtube.com/watch?v=Lrxk9zgUZl8)
 
 ## 목적
 - 웹페이지의 구조를 파악하여 modeling 구현
