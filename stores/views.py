@@ -71,18 +71,18 @@ class CartView(View):
                                 'gift_id'           : cart['gift_set__id'],
                                 'gift_set'          : cart['gift_set__name'],
                                 'gift_color'        : cart['gift_set__image__color__name'],
-                                'gift_price'        : cart['gift_set__price'], 
-                                'gift_image'        : cart['gift_set__image__product_image'],                           
-                                'razor_id'          : cart['razor_set__id'],                            
-                                'razor_set'         : cart['razor_set__name'],                            
+                                'gift_price'        : cart['gift_set__price'],
+                                'gift_image'        : cart['gift_set__image__product_image'],
+                                'razor_id'          : cart['razor_set__id'],
+                                'razor_set'         : cart['razor_set__name'],
                                 'razor_color'       : cart['razor_set__image__color__name'],
-                                'razor_price'       : cart['razor_set__price'],                             
-                                'razor_image'       : cart['razor_set__image__product_image'], 
-                                'blade_id'          : cart['blade__id'],                                                                              
+                                'razor_price'       : cart['razor_set__price'],
+                                'razor_image'       : cart['razor_set__image__product_image'],
+                                'blade_id'          : cart['blade__id'],
                                 'blade'             : cart['blade__name'],
                                 'blade_price'       : cart['blade__price'],
                                 'blade_image'       : cart['blade__image'],
-                                'shaving_gel_id'    : cart['shaving_gel__id'],                                                                              
+                                'shaving_gel_id'    : cart['shaving_gel__id'],
                                 'shaving_gel'       : cart['shaving_gel__name'],
                                 'shaving_gel_price' : cart['shaving_gel__price'],
                                 'shaving_gel_image' : cart['shaving_gel__image'],
@@ -90,11 +90,11 @@ class CartView(View):
                                 'after_shave'       : cart['after_shave__after_shave__name'],
                                 'skin_type'         : cart['after_shave__skin_type__name'],
                                 'after_shave_price' : cart['after_shave__after_shave__price'],
-                                'after_shave_image' : cart['after_shave__image']                            
+                                'after_shave_image' : cart['after_shave__image']
                                 }for cart in (order.cart_set.select_related(
                                 'gift_set',
                                 'gift_set__image',
-                                'gift_set__image__color',                           
+                                'gift_set__image__color',
                                 'razor_set',
                                 'razor_set__image',
                                 'razor_set__image__color',
@@ -104,21 +104,21 @@ class CartView(View):
                                 'after_shave__after__shave',
                                 'after_shave__skin_type',
                                 ).filter(order_id = order.id).values(
-                                    'gift_set__id',                                
+                                    'gift_set__id',
                                     'gift_set__name',
                                     'gift_set__image__color__name',
                                     'gift_set__price',
-                                    'gift_set__image__product_image', 
-                                    'razor_set__id',                                                                 
+                                    'gift_set__image__product_image',
+                                    'razor_set__id',
                                     'razor_set__name',
                                     'razor_set__image__color__name',
-                                    'razor_set__price',                                
-                                    'razor_set__image__product_image', 
-                                    'blade__id',                                                                 
+                                    'razor_set__price',
+                                    'razor_set__image__product_image',
+                                    'blade__id',
                                     'blade__name',
                                     'blade__price',
                                     'blade__image',
-                                    'shaving_gel__id',                                
+                                    'shaving_gel__id',
                                     'shaving_gel__name',
                                     'shaving_gel__price',
                                     'shaving_gel__image',
@@ -126,30 +126,14 @@ class CartView(View):
                                     'after_shave__after_shave__name',
                                     'after_shave__skin_type__name',
                                     'after_shave__after_shave__price',
-                                    'after_shave__image'                                
+                                    'after_shave__image'
                                     ).order_by('gift_set__id','razor_set__id', 'blade__id', 'shaving_gel__id', 'after_shave__id').distinct()
                                 )
                             ]
                 }for order in orders]
 
-                quantities = {
-                    'gift_set_navy'       : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, gift_set = 1).aggregate(quantity=Count('gift_set__id')),
-                    'gift_set_blue'       : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, gift_set = 2).aggregate(quantity=Count('gift_set__id')),
-                    'gift_set_gray'       : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, gift_set = 3).aggregate(quantity=Count('gift_set__id')),                           
-                    'razor_set_navy'      : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, razor_set = 1).aggregate(quantity=Count('razor_set__id')),
-                    'razor_set_blue'      : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, razor_set = 2).aggregate(quantity=Count('razor_set__id')),
-                    'razor_set_gray'      : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, razor_set = 3).aggregate(quantity=Count('razor_set__id')),
-                    'blade'               : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, blade = 1).aggregate(quantity=Count('blade__id')),                                                 
-                    'shaving_gel_150'     : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, shaving_gel = 1).aggregate(quantity=Count('shaving_gel__id')), 
-                    'shaving_gel_75'      : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, shaving_gel = 2).aggregate(quantity=Count('shaving_gel__id')),                 
-                    'after_shave_60_oily' : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, after_shave = 1).aggregate(quantity=Count('after_shave__id')),             
-                    'after_shave_60_dry'  : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, after_shave = 2).aggregate(quantity=Count('after_shave__id')),
-                    'after_shave_30_oily' : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, after_shave = 3).aggregate(quantity=Count('after_shave__id')),
-                    'after_shave_30_dry'  : Cart.objects.filter(user = request.user, order__order_status__id = ORDER_STATUS_PENDING, after_shave = 4).aggregate(quantity=Count('after_shave__id'))                                
-                }            
+                return JsonResponse({'data' : carts}, status = 200)
 
-                return JsonResponse({'carts' : carts, 'quantities' : quantities}, status= 200)
-            
         except IntegrityError:
             return JsonResponse({'message' : 'PRODUCT_DOES_NOT_EXISTS'}, status = 400)
 
