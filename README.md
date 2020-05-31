@@ -64,4 +64,4 @@
 <br>
 
 ## API documents(POSTMAN)
-![](https://documenter.getpostman.com/view/10871584/SzmiYGij?version=latest#ebf689fe-4133-4144-b9ba-bd6acb2da8f0)
+![회원가입, 구독설문, 장바구니](https://documenter.getpostman.com/view/10871584/SzmiYGij?version=latest#ebf689fe-4133-4144-b9ba-bd6acb2da8f0)
