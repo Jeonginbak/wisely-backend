@@ -8,38 +8,44 @@ from django.db.models import Count
 from user.models    import User
 from user.utils     import login_required
 from .models        import (
-GiftSet,
-GiftSetImage,
-RazorSet,
-RazorSetImage,
-Blade,
-ShavingGel,
-AfterShave,
-AfterShaveSkinType,
-SkinType,
-Color,
-Cart,
-Order
+    GiftSet,
+    GiftSetImage,
+    RazorSet,
+    RazorSetImage,
+    Blade,
+    ShavingGel,
+    AfterShave,
+    AfterShaveSkinType,
+    SkinType,
+    Color,
+    Cart,
+    Order
 )
-
-ORDER_STATUS_PENDING = 1
 
 class CartView(View):
     @login_required
     def post(self, request):
         data = json.loads(request.body)
+
         try:
             with transaction.atomic():
-                sid = transaction.savepoint()
+                sid   = transaction.savepoint()
+                order = Order.objects.filter(
+                    user = request.user,
+                    order_status_id = PENDING_ORDER
+                ).exists()
 
-                if not Order.objects.filter(user = request.user, order_status_id = 1).exists():
+                if not order:
                     Order.objects.create(
                         order_num       = 'wisely_' + uuid.uuid4().hex,
                         user            = request.user,
                         order_status_id = 1
                     )
 
-                user_order = Order.objects.get(user = request.user, order_status_id = ORDER_STATUS_PENDING)
+                user_order = Order.objects.get(
+                    user            = request.user,
+                    order_status_id = PENDING_ORDER
+                )
 
                 if sum(value == None for value in data.values()) < 4:
                     transaction.savepoint_rollback(sid)
@@ -53,10 +59,19 @@ class CartView(View):
                 shaving_gel_id = data['shaving_gel_id'],
                 after_shave_id = data['after_shave_id'],
                 order          = user_order
-                )
+            )
 
             if Order.objects.filter(user = request.user).exists():
-                orders = Order.objects.select_related('user','order_status').prefetch_related('cart_set').filter(user = request.user, order_status_id = ORDER_STATUS_PENDING)
+                orders = (
+                    Order
+                    .objects
+                    .select_related('user','order_status')
+                    .prefetch_related('cart_set')
+                    .filter(
+                        user            = request.user,
+                        order_status_id = ORDER_STATUS_PENDING
+                    )
+
                 carts = [
                     {
                         'id'           : order.id,
@@ -67,6 +82,8 @@ class CartView(View):
                         'memo'         : order.memo,
                         'order_status' : order.order_status.status,
                         'created_at'   : order.created_at,
+                        'cart'         : {'name': product.name, 'id': product.id for product in products}
+
                         'cart'         : [{
                                 'gift_id'           : cart['gift_set__id'],
                                 'gift_set'          : cart['gift_set__name'],
@@ -130,12 +147,11 @@ class CartView(View):
                                     ).order_by('gift_set__id','razor_set__id', 'blade__id', 'shaving_gel__id', 'after_shave__id').distinct()
                                 )
                             ]
-                }for order in orders]
+                } for order in orders]
 
                 return JsonResponse({'data' : carts}, status = 200)
 
         except IntegrityError:
             return JsonResponse({'message' : 'PRODUCT_DOES_NOT_EXIST'}, status = 400)
-
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)

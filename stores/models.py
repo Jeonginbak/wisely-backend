@@ -1,6 +1,14 @@
 from django.db import models
 
-class GiftSet(models.Model):
+class Product(models.Model):
+    name = models.CharField(max_length = 200)
+
+    # products
+    # ========
+    # id: 1, name: Blade
+    # id: 2, name: Razor
+
+class GiftSetOption(models.Model):
     name  = models.CharField(max_length = 20)
     price = models.PositiveIntegerField(default = 0)
     image = models.ForeignKey('GiftSetImage', on_delete = models.SET_NULL, null = True)
@@ -15,10 +23,10 @@ class GiftSetImage(models.Model):
     class Meta:
         db_table = 'gift_set_images'
 
-class RazorSet(models.Model):
-    name  = models.CharField(max_length = 20)
-    price = models.PositiveIntegerField(default = 0)
-    image = models.ForeignKey('RazorSetImage', on_delete = models.SET_NULL, null = True)
+class RazorSetOption(models.Model):
+    product = models.ForeignKey(Product)
+    price   = models.PositiveIntegerField(default = 0)
+    image   = models.ForeignKey('RazorSetImage', on_delete = models.SET_NULL, null = True)
 
     class Meta:
         db_table = 'razor_sets'
@@ -117,8 +125,9 @@ class Order(models.Model):
         db_table = 'orders'
 
 class OrderStatus(models.Model):
-    status = models.CharField(max_length = 30)
+    status  = models.CharField(max_length = 30)
 
     class Meta:
         db_table = 'order_status'
 
+PENDING_ORDER = OrderStatus.get(status = '결제대기중').id

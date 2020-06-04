@@ -1,7 +1,7 @@
 from django.db import models
 
 class Question(models.Model):
-    question = models.CharField(max_length = 50)
+    question = models.CharField(max_length = 500)
 
     class Meta:
         db_table = 'questions'
@@ -15,9 +15,14 @@ class Answer(models.Model):
     class Meta:
         db_table = 'answers'
 
-class Duration(models.Model):
+class SubscriptionPeriod(models.Model):
     name        = models.CharField(max_length = 20)
     description = models.CharField(max_length = 500)
+    period      = models.IntegerField(default = 1)
+    period_type = models.ForeignKey(PeriodType)
 
     class Meta:
         db_table = 'durations'
+
+class PeriodType:
+    name = models.CharField(max_length = 20)

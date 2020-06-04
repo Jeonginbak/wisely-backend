@@ -23,23 +23,27 @@ class SurveyView(View):
             }
 
             return JsonResponse({'data' : data}, status = 200)
-
         except Question.DoesNotExist:
             return JsonResponse({'message' : 'QUESTION_DOES_NOT_EXIST'}, status = 400)
 
 class ResultView(View):
     def post(self,request):
-        AFTER_SHAVE_ADD = '1'
         data = json.loads(request.body)
+
         try:
-            razor = RazorSet.objects.select_related('image', 'image__color').get(image__color_id = data['answer_4'])
-            blade = Blade.objects.first()
-            shaving_gel = ShavingGel.objects.first()
-            image = {
+            razor = (
+                RazorSet
+                .objects
+                .select_related('image', 'image__color')
+                .get(image__color_id = data['color_id'])
+            )
+            blade       = Blade.objects.get(type = 'regular')
+            shaving_gel = ShavingGel.objects.first(type = 'regular')
+            image       = {
                 'razor_image'       : razor.image.result_image,
                 'blade_image'       : blade.result_image,
                 'shaving_gel_image' : shaving_gel.result_image,
-                'sub_image'         : list(RazorImages.objects.filter(color_id = data['answer_4'], image_type = 'zero_up').values('image'))
+                'sub_image'         : list(RazorImages.objects.filter(color_id = data['color_id'], image_type = 'zero_up').values('image'))
             }
             products = {
                 'razor' : {
@@ -57,15 +61,19 @@ class ResultView(View):
                 }
             }
 
-            if data['answer_3'] == AFTER_SHAVE_ADD:
-                after_shave = AfterShaveSkinType.objects.select_related('after_shave').filter(skin_type = data['answer_2']).first()
+            if data['after_shave']:
+                after_shave = (
+                    AfterShaveSkinType
+                    .objects
+                    .select_related('after_shave')
+                    .get(skin_type = data['skin_type'], type = 'regular')
+                )
+
                 image['after_shave_image'] = after_shave.result_image
-                products['after_shave'] = {
+                products['after_shave']    = {
                     'name'  : after_shave.after_shave.name,
                     'price' : after_shave.after_shave.price,
                 }
-
+            return JsonResponse({'image' : image, 'product' : products}, status = 200)
         except KeyError:
             return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
-
-        return JsonResponse({'image' : image, 'product' : products}, status = 200)
